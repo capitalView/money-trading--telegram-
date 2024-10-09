@@ -47,4 +47,4 @@ jobs:
 
       - name: Deploy to server
         run: |
-          docker-compose up -d
+          docker-compose up 
