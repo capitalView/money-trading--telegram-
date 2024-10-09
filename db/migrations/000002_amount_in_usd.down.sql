@@ -1,0 +1,1 @@
+alter table money drop column usd_rate;

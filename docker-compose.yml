@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  app:
+    image: app:local # image name
+    container_name: ps-app1 # container name
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    container_name: my_postgres_db_1
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    container_name: pgadmin
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: admin@example.com
+#      PGADMIN_DEFAULT_PASSWORD: admin
+#    ports:
+#      - "8080:80"
+#    depends_on:
+#      - db
+volumes:
+  db_data:
+
