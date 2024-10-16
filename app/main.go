@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"main/telegram"
 	"main/utils"
 	"strconv"
@@ -16,7 +17,7 @@ func main() {
 	rate, err := utils.NewRateService()
 	bot.SendMessage(chatId, "Bot init")
 	if err != nil {
-		bot.SendMessage(chatId, err.Error())
+		bot.SendMessage(chatId, fmt.Sprintf("failed to make GET request: %v", err))
 		return
 	}
 	db := utils.NewDatabaseService()
