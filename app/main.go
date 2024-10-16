@@ -12,14 +12,15 @@ func main() {
 
 	done := make(chan bool)
 	bot := telegram.NewBotService()
-	bot.SendMessage(chatId, "Bot init")
 
-	rateMap := utils.NewRateService()
+	rate := utils.NewRateService()
+	bot.SendMessage(chatId, "Bot init")
 	db := utils.NewDatabaseService()
 
 	ticker := time.NewTicker(4 * time.Hour)
 
 	defer func() {
+		bot.SendMessage(chatId, "error")
 		ticker.Stop()
 		bot.StopPulling()
 		db.Close()
@@ -31,7 +32,7 @@ func main() {
 			case <-done:
 				return
 			case <-ticker.C:
-				rateMap.UpdateRates()
+				rate.UpdateRates()
 				bot.SendMessage(chatId, "Rates updated")
 			}
 		}
@@ -44,10 +45,10 @@ func main() {
 			text := update.Message.Text
 			id := update.Message.Chat.ID
 			if text == "/balance" {
-				bot.SendMessage(id, db.GetMoney(rateMap))
+				bot.SendMessage(id, db.GetMoney(rate))
 				continue
 			}
-			bot.SendMessage(id, db.SaveInfo(text, rateMap))
+			bot.SendMessage(id, db.SaveInfo(text, rate))
 		}
 	}
 
