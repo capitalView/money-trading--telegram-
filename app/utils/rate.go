@@ -48,9 +48,12 @@ type RateService struct {
 	rateMap map[string]float64
 }
 
-func NewRateService() *RateService {
-	rateMap, _ := GetRequest("", "")
-	return &RateService{rateMap: rateMap}
+func NewRateService() (*RateService, error) {
+	rateMap, err := GetRequest("", "")
+	if err != nil {
+		return nil, err
+	}
+	return &RateService{rateMap: rateMap}, nil
 }
 
 func (rs *RateService) UpdateRates() {

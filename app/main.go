@@ -13,8 +13,12 @@ func main() {
 	done := make(chan bool)
 	bot := telegram.NewBotService()
 
-	rate := utils.NewRateService()
+	rate, err := utils.NewRateService()
 	bot.SendMessage(chatId, "Bot init")
+	if err != nil {
+		bot.SendMessage(chatId, err.Error())
+		return
+	}
 	db := utils.NewDatabaseService()
 
 	ticker := time.NewTicker(4 * time.Hour)
