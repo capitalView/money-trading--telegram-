@@ -73,7 +73,7 @@ func (ds *DatabaseService) GetMoney(rate *RateService) string {
 	return output
 }
 
-func (ds *DatabaseService) SaveInfo(text string, rate *RateService) string {
+func (ds *DatabaseService) SaveInfo(text string, rate *RateService) (string, error) {
 
 	rateMap := rate.rateMap
 
@@ -95,8 +95,8 @@ func (ds *DatabaseService) SaveInfo(text string, rate *RateService) string {
 
 	_, err := ds.db.Exec(context.Background(), "insert into money (amount, currency, type, name, description, usd_rate) values ($1,$2, $3,$4, $5, $6) ", amount, currency, typeName, name, description, usdRate)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
-	return ds.GetMoney(rate)
+	return ds.GetMoney(rate), nil
 }

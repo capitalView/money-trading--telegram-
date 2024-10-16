@@ -25,7 +25,6 @@ func main() {
 	ticker := time.NewTicker(4 * time.Hour)
 
 	defer func() {
-		bot.SendMessage(chatId, "error")
 		ticker.Stop()
 		bot.StopPulling()
 		db.Close()
@@ -43,18 +42,15 @@ func main() {
 		}
 	}()
 
+	mapper := utils.NewResponseMapperServices(db, rate)
+
 	updates := bot.StartLongPolling()
 
 	for update := range updates {
 		if update.Message != nil {
 			text := update.Message.Text
 			id := update.Message.Chat.ID
-			if text == "/balance" {
-				bot.SendMessage(id, db.GetMoney(rate))
-				continue
-			}
-			bot.SendMessage(id, db.SaveInfo(text, rate))
+			bot.SendMessage(id, mapper.MapperCommand(text))
 		}
 	}
-
 }
