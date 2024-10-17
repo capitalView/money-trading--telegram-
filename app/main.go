@@ -44,11 +44,7 @@ func main() {
 
 	mapper := utils.NewResponseMapperServices(db, rate)
 
-	go func() {
-		bot.StartWebhook(utils.ApiUrl)
-	}()
-
-	updates := bot.GetUpdates()
+	updates := bot.StartLongPolling()
 
 	for update := range updates {
 		if update.Message != nil {

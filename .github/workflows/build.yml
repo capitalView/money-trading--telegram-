@@ -40,7 +40,6 @@ jobs:
           echo "TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}" >> .env
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
           echo "CHAT_ID=${{ secrets.CHAT_ID }}" >> .env
-          echo "API_URL=${{ secrets.API_URL }}" >> .env
         shell: bash
 
       - name: Build and start services
