@@ -30,13 +30,25 @@ func (bs *BotService) SendMessage(id int64, text string) {
 }
 
 func (bs *BotService) StartLongPolling() <-chan telego.Update {
+	_ = bs.bot.SetWebhook(&telego.SetWebhookParams{
+		URL: utils.ApiUrl + bs.bot.Token(),
+	})
 	updates, _ := bs.bot.UpdatesViaLongPolling(&telego.GetUpdatesParams{
 		Offset: -1,
 	})
 
 	return updates
-
 }
+
+func (bs *BotService) GetUpdates() <-chan telego.Update {
+	updates, _ := bs.bot.UpdatesViaWebhook("/bot" + bs.bot.Token())
+	return updates
+}
+
+func (bs *BotService) StartWebhook(address string) {
+	bs.bot.StartWebhook(address)
+}
+
 func (bs *BotService) StopPulling() {
-	bs.bot.StopLongPolling()
+	bs.bot.StopWebhook()
 }
