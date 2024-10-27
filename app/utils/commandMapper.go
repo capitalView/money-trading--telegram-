@@ -13,9 +13,8 @@ func NewResponseMapperServices(db *DatabaseService, rate *RateService) *Response
 
 func (r *ResponseMapper) MapperCommand(text string) string {
 	switch text {
-	case "/balance":
-		//case "/balances":
-		return r.db.GetMoney(r.rate)
+	case "/balance", "/balances":
+		return r.db.GetAll(r.rate)
 	default:
 		if string(text[0]) == "/" {
 			return "команда или текст не найден"

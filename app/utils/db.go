@@ -32,7 +32,7 @@ type Info struct {
 	Rate     float64
 }
 
-func (ds *DatabaseService) GetMoney(rate *RateService) string {
+func (ds *DatabaseService) GetAll(rate *RateService) string {
 
 	rows, err := ds.db.Query(context.Background(), "select amount, currency, usd_rate from money")
 	if err != nil {
@@ -74,29 +74,19 @@ func (ds *DatabaseService) GetMoney(rate *RateService) string {
 }
 
 func (ds *DatabaseService) SaveInfo(text string, rate *RateService) (string, error) {
-
 	rateMap := rate.rateMap
-
-	var typeName = "Deposit"
-	parts := strings.Split(text, " ")
-	var description = ""
-	amount, currency, name := parts[0], parts[1], parts[2]
-
-	if len(parts) > 3 {
-		description = parts[3]
+	parse, parseErr := ParseText(text)
+	if parseErr != nil {
+		return "", parseErr
 	}
 
-	if amount[0] == '-' {
-		typeName = "Withdraw"
-	}
-
-	info := rateMap[strings.ToLower(currency)]
+	info := rateMap[strings.ToLower(parse.Currency)]
 	usdRate := 1 / info
 
-	_, err := ds.db.Exec(context.Background(), "insert into money (amount, currency, type, name, description, usd_rate) values ($1,$2, $3,$4, $5, $6) ", amount, currency, typeName, name, description, usdRate)
+	_, err := ds.db.Exec(context.Background(), "insert into money (amount, currency, type, name, description, usd_rate) values ($1,$2, $3,$4, $5, $6) ", parse.Amount, parse.Currency, parse.Type, parse.Name, parse.Description, usdRate)
 	if err != nil {
 		return "", err
 	}
 
-	return ds.GetMoney(rate), nil
+	return ds.GetAll(rate), nil
 }
