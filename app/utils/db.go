@@ -43,7 +43,7 @@ func (ds *DatabaseService) GetAll(rate *RateService) string {
 	var bank float64
 
 	for rows.Next() {
-		fmt.Println(rows.Values())
+
 		info := Info{}
 		err := rows.Scan(&info.Amount, &info.Currency, &info.Rate)
 		if err != nil {
@@ -58,7 +58,7 @@ func (ds *DatabaseService) GetAll(rate *RateService) string {
 	}
 
 	var output string
-	fmt.Println(currencyAccountMap)
+
 	finalBank := fmt.Sprintf("%.2f", bank)
 	output += "# Your Balances =" + "  $" + finalBank + "\n"
 	output += "| Currency 	| Balance |\n"
@@ -67,7 +67,7 @@ func (ds *DatabaseService) GetAll(rate *RateService) string {
 	//// Форматированный вывод остатка
 	for _, value := range currencyAccountMap {
 		result, _ := rate.ConvertCurrency(bank, "usd", strings.ToLower(value))
-		output += fmt.Sprintf("| %s      |$%.2f       |\n", value, result)
+		output += fmt.Sprintf("| %s      |%s %.2f       |\n", value, rate.GetCurrencySymbols(value), result)
 	}
 
 	return output

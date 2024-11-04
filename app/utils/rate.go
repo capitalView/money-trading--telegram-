@@ -76,3 +76,52 @@ func (rs *RateService) ConvertCurrency(amount float64, fromCurrency string, toCu
 
 	return convertedAmount, nil
 }
+
+const CurrencySymbols = `{
+"USD": "$",
+"CAD": "C$",
+"MXN": "MX$",
+"BRL": "R$",
+"CRC": "₡",
+"BOB": "$b",
+"EUR": "€",
+"GBP": "£",
+"JPY": "¥",
+"CNY": "¥",
+"INR": "₹",
+"RUB": "₽",
+"KRW": "₩",
+"AUD": "A$",
+"NZD": "NZ$",
+"SGD": "S$",
+"HKD": "HK$",
+"ZAR": "R",
+"SEK": "kr",
+"NOK": "kr",
+"DKK": "kr",
+"PLN": "zł",
+"CHF": "CHF",
+"THB": "฿",
+"TRY": "₺",
+"VND": "₫",
+"IDR": "Rp",
+"PHP": "₱",
+"MYR": "RM",
+"NGN": "₦",
+"EGP": "£",
+"KZT": "₸",
+"UAH": "₴",
+"CLP": "$",
+"COP": "$",
+"ARS": "$",
+"PEN": "S/"
+}`
+
+func (rs *RateService) GetCurrencySymbols(symbol string) string {
+	currencySymbols, _ := ParseJson(CurrencySymbols)
+	mapSymbols := currencySymbols.(map[string]interface{})
+	if mapSymbols[symbol] != nil {
+		return mapSymbols[symbol].(string)
+	}
+	return "$"
+}
