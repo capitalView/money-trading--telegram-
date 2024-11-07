@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"main/telegram"
 	"main/utils"
@@ -47,10 +48,23 @@ func main() {
 	updates := bot.StartLongPolling()
 
 	for update := range updates {
+		if update.EditedMessage != nil {
+			id := update.EditedMessage.Chat.ID
+			print(id, update.EditedMessage)
+			bot.SendMessage(id, mapper.Update(update.EditedMessage))
+		}
 		if update.Message != nil {
-			text := update.Message.Text
 			id := update.Message.Chat.ID
-			bot.SendMessage(id, mapper.MapperCommand(text))
+			bot.SendMessage(id, mapper.MapperCommand(update.Message))
 		}
 	}
+}
+
+func print(data ...any) {
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return
+	}
+	fmt.Println(string(jsonData))
 }

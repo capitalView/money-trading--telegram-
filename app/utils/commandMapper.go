@@ -1,6 +1,9 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/mymmrac/telego"
+)
 
 type ResponseMapper struct {
 	db   *DatabaseService
@@ -11,15 +14,45 @@ func NewResponseMapperServices(db *DatabaseService, rate *RateService) *Response
 	return &ResponseMapper{db: db, rate: rate}
 }
 
-func (r *ResponseMapper) MapperCommand(text string) string {
-	switch text {
+func (r *ResponseMapper) save(message *telego.Message) (string, error) {
+	messagePayload := GetMessagePayload(message)
+	id, err := r.db.SaveInfo(messagePayload.Text, r.rate)
+	if err != nil {
+		return "", err
+	}
+	r.db.SavePayload(messagePayload, id)
+	return r.db.GetAll(r.rate), nil
+}
+
+func (r *ResponseMapper) Update(message *telego.Message) string {
+	messagePayload := GetMessagePayload(message)
+	id, err := r.db.GetTransactionId(messagePayload.MessageID)
+	fmt.Println(id)
+	if err != nil {
+		return fmt.Sprintf("%x", err)
+	}
+	result, err := ParseText(messagePayload.Text)
+	if err != nil {
+		return fmt.Sprintf("%x", err)
+	}
+	errorUpdate := r.db.UpdateTransaction(result, id)
+	if errorUpdate != nil {
+		return fmt.Sprintf("%x", errorUpdate)
+	}
+	r.db.UpdatePayload(messagePayload, id)
+	return r.db.GetAll(r.rate)
+}
+
+func (r *ResponseMapper) MapperCommand(message *telego.Message) string {
+	messageText := message.Text
+	switch messageText {
 	case "/balance", "/balances":
 		return r.db.GetAll(r.rate)
 	default:
-		if string(text[0]) == "/" {
-			return "команда или текст не найден"
+		if string(messageText[0]) == "/" {
+			return "command or text not found"
 		}
-		text, err := r.db.SaveInfo(text, r.rate)
+		text, err := r.save(message)
 		if err != nil {
 			return fmt.Sprintf("ошибка при сохранении информации: %v", err)
 		}
