@@ -32,12 +32,10 @@ func (m *ResponseMapper) Edit(message *telego.Message) string {
 	if err != nil {
 		return fmt.Sprintf("%x", err)
 	}
-	print(id)
 	result, err := transaction.ParseText(message.Text, m.rate)
 	if err != nil {
 		return fmt.Sprintf("%x", err)
 	}
-	print(result)
 	tr := transaction.NewTransaction(m.db, m.rate)
 	errorUpdate := tr.Update(id, result)
 
