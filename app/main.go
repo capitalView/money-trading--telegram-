@@ -1,34 +1,37 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"main/command"
+	"main/db"
 	"main/telegram"
 	"main/utils"
 	"strconv"
 	"time"
 )
 
+var ChatIdAmin = utils.GoDotEnvVariable("CHAT_ID")
+
 func main() {
-	chatId, _ := strconv.ParseInt(utils.ChatIdAmin, 10, 64)
+	chatId, _ := strconv.ParseInt(ChatIdAmin, 10, 64)
 
 	done := make(chan bool)
 	bot := telegram.NewBotService()
 
 	rate, err := utils.NewRateService()
-	bot.SendMessage(chatId, "Bot init")
+	bot.Send(chatId, "Bot init")
 	if err != nil {
-		bot.SendMessage(chatId, fmt.Sprintf("failed to make GET request: %v", err))
+		bot.Send(chatId, fmt.Sprintf("failed to make GET request: %v", err))
 		return
 	}
-	db := utils.NewDatabaseService()
 
 	ticker := time.NewTicker(4 * time.Hour)
 
+	database := db.NewDatabaseService()
 	defer func() {
 		ticker.Stop()
 		bot.StopPulling()
-		db.Close()
+		database.Close()
 	}()
 
 	go func() {
@@ -38,33 +41,24 @@ func main() {
 				return
 			case <-ticker.C:
 				rate.UpdateRates()
-				bot.SendMessage(chatId, "Rates updated")
+				bot.Send(chatId, "Rates updated")
 			}
 		}
 	}()
 
-	mapper := utils.NewResponseMapperServices(db, rate)
+	mapper := command.NewResponseMapper(database, rate)
 
 	updates := bot.StartLongPolling()
 
 	for update := range updates {
 		if update.EditedMessage != nil {
 			id := update.EditedMessage.Chat.ID
-			print(id, update.EditedMessage)
-			bot.SendMessage(id, mapper.Update(update.EditedMessage))
+			bot.Send(id, mapper.Edit(update.EditedMessage))
+			bot.Delete(id, update.EditedMessage.MessageID+1)
 		}
 		if update.Message != nil {
 			id := update.Message.Chat.ID
-			bot.SendMessage(id, mapper.MapperCommand(update.Message))
+			bot.Send(id, mapper.MapperCommand(update.Message))
 		}
 	}
-}
-
-func print(data ...any) {
-	jsonData, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
-		return
-	}
-	fmt.Println(string(jsonData))
 }

@@ -61,6 +61,10 @@ func (rs *RateService) UpdateRates() {
 	rs.rateMap = rateMap
 }
 
+func (rs *RateService) Get() map[string]float64 {
+	return rs.rateMap
+}
+
 func (rs *RateService) ConvertCurrency(amount float64, fromCurrency string, toCurrency string) (float64, error) {
 	fromRate, fromExists := rs.rateMap[fromCurrency]
 	toRate, toExists := rs.rateMap[toCurrency]

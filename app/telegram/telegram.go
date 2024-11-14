@@ -8,35 +8,47 @@ import (
 )
 
 type BotService struct {
-	bot *telego.Bot
+	*telego.Bot
 }
 
+var TokenTelegram = utils.GoDotEnvVariable("TELEGRAM_TOKEN")
+
 func NewBotService() *BotService {
-	bot, err := telego.NewBot(utils.TokenTelegram, telego.WithDefaultDebugLogger())
+	bot, err := telego.NewBot(TokenTelegram, telego.WithDefaultDebugLogger())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	return &BotService{bot: bot}
+	return &BotService{bot}
 }
 
-func (bs *BotService) SendMessage(id int64, text string) {
-	bs.bot.SendMessage(&telego.SendMessageParams{
+func (b *BotService) Send(id int64, text string) {
+	b.SendMessage(&telego.SendMessageParams{
 		ChatID: telego.ChatID{
 			ID: id,
 		},
-		Text: text,
+		Text:      text,
+		ParseMode: "Markdown",
 	})
 }
 
-func (bs *BotService) StartLongPolling() <-chan telego.Update {
-	updates, _ := bs.bot.UpdatesViaLongPolling(&telego.GetUpdatesParams{
+func (b *BotService) Delete(id int64, messageId int) {
+	b.DeleteMessage(&telego.DeleteMessageParams{
+		ChatID: telego.ChatID{
+			ID: id,
+		},
+		MessageID: messageId,
+	})
+}
+
+func (b *BotService) StartLongPolling() <-chan telego.Update {
+	updates, _ := b.UpdatesViaLongPolling(&telego.GetUpdatesParams{
 		Offset: -1,
 	})
 
 	return updates
 
 }
-func (bs *BotService) StopPulling() {
-	bs.bot.StopLongPolling()
+func (b *BotService) StopPulling() {
+	b.StopLongPolling()
 }
