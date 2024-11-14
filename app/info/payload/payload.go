@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"context"
 	"fmt"
 	"github.com/mymmrac/telego"
 	"main/db"
@@ -23,8 +24,8 @@ func NewPayload(db *db.Database, message *telego.Message) *Payload {
 	return &Payload{Database: db, payload: payload}
 }
 
-func (data *Payload) GetTransactionId(messageId int) (int, error) {
-	rows, err := data.Query(GetTransactionId, messageId)
+func (data *Payload) GetTransactionId(ctx context.Context, messageId int) (int, error) {
+	rows, err := data.Query(ctx, GetTransactionId, messageId)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -39,9 +40,9 @@ func (data *Payload) GetTransactionId(messageId int) (int, error) {
 	return trId, nil
 }
 
-func (data *Payload) SavePayload(transactionID int) {
-	data.Execute(InsertPayload, transactionID, data.payload)
+func (data *Payload) SavePayload(ctx context.Context, transactionID int) error {
+	return data.Execute(ctx, InsertPayload, transactionID, data.payload)
 }
-func (data *Payload) UpdatePayload(transactionID int) {
-	data.Execute(UpdatePayload, transactionID, data.payload)
+func (data *Payload) UpdatePayload(ctx context.Context, transactionID int) {
+	data.Execute(ctx, UpdatePayload, transactionID, data.payload)
 }

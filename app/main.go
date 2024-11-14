@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"main/command"
 	"main/db"
@@ -13,6 +14,7 @@ import (
 var ChatIdAmin = utils.GoDotEnvVariable("CHAT_ID")
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
 	chatId, _ := strconv.ParseInt(ChatIdAmin, 10, 64)
 
 	done := make(chan bool)
@@ -27,11 +29,13 @@ func main() {
 
 	ticker := time.NewTicker(4 * time.Hour)
 
-	database := db.NewDatabaseService()
+	database := db.NewDatabaseService(ctx)
+
 	defer func() {
 		ticker.Stop()
 		bot.StopPulling()
-		database.Close()
+		database.Close(ctx)
+		cancel()
 	}()
 
 	go func() {
@@ -53,12 +57,12 @@ func main() {
 	for update := range updates {
 		if update.EditedMessage != nil {
 			id := update.EditedMessage.Chat.ID
-			bot.Send(id, mapper.Edit(update.EditedMessage))
+			bot.Send(id, mapper.Edit(ctx, update.EditedMessage))
 			bot.Delete(id, update.EditedMessage.MessageID+1)
 		}
 		if update.Message != nil {
 			id := update.Message.Chat.ID
-			bot.Send(id, mapper.MapperCommand(update.Message))
+			bot.Send(id, mapper.MapperCommand(ctx, update.Message))
 		}
 	}
 }
