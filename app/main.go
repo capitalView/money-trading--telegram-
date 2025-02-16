@@ -45,7 +45,6 @@ func main() {
 				return
 			case <-ticker.C:
 				rate.UpdateRates()
-				bot.Send(chatId, "Rates updated")
 			}
 		}
 	}()
